@@ -1,0 +1,19 @@
+# Copyright https://github.com/Foxboron/terraform-provider-openwrt/graphs/contributors 2026
+# SPDX-License-Identifier: MPL-2.0
+
+# OpenWrt rootfs with the LuCI JSON-RPC API the provider talks to.
+# Adapted from joneshf/terraform-provider-openwrt (MPL-2.0):
+# https://github.com/joneshf/terraform-provider-openwrt/blob/11fad22eb3bfdbde1158416b546041ebd9ab040b/acceptance-test.Dockerfile
+
+ARG OPENWRT_VERSION=24.10.8
+FROM docker.io/openwrt/rootfs:x86_64-${OPENWRT_VERSION}
+
+# OpenWrt 25.12 replaced opkg with apk.
+RUN mkdir -p /var/lock \
+    && if command -v apk >/dev/null; then \
+        apk update && apk add luci-compat luci-lib-ipkg luci-mod-rpc luasocket; \
+    else \
+        opkg update && opkg install luci-compat luci-lib-ipkg luci-mod-rpc luasocket; \
+    fi
+
+CMD ["/sbin/init"]

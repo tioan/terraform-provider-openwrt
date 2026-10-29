@@ -60,3 +60,23 @@ provider_installation {
   direct {}
 }
 ```
+
+### Test routers
+
+`testenv/openwrt-containers.sh` starts throwaway OpenWrt containers (23.05, 24.10 and 25.12 by default) with the LuCI JSON-RPC API, each on `127.0.0.1:180<major>`. It needs `podman` or `docker` and an x86_64 host.
+
+```shell
+testenv/openwrt-containers.sh up
+testenv/openwrt-containers.sh status
+testenv/openwrt-containers.sh down
+```
+
+Point the provider at one of them:
+
+```hcl
+provider "openwrt" {
+  remote   = "http://127.0.0.1:18024"
+  user     = "root"
+  password = "openwrt-test"
+}
+```
