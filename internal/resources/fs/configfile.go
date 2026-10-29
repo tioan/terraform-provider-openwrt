@@ -158,18 +158,21 @@ func (c configFileResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	path := path.Join(etcConfig, state.Name.ValueString())
-	err := c.provider.RemoveFile(ctx, path)
-	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Failed to delete config file %q", state.Name.ValueString()), err.Error())
-		return
-	}
-
+	// Commit before removing the file: uci commit and revert both fail on a
+	// config that no longer exists. This also flushes changes staged for the
+	// config, so they cannot bring it back later.
 	if state.Commit.ValueBool() {
 		if err := c.provider.CommitOrRevert(ctx, state.Name.ValueString()); err != nil {
 			resp.Diagnostics.AddError("failed to commit or revert", err.Error())
 			return
 		}
+	}
+
+	path := path.Join(etcConfig, state.Name.ValueString())
+	err := c.provider.RemoveFile(ctx, path)
+	if err != nil {
+		resp.Diagnostics.AddError(fmt.Sprintf("Failed to delete config file %q", state.Name.ValueString()), err.Error())
+		return
 	}
 }
 
